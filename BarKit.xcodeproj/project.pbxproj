@@ -16,6 +16,10 @@
 		110000000000000000000007 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000008 /* CoreAudio.framework */; };
 		110000000000000000000008 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000010 /* main.swift */; };
 		110000000000000000000009 /* LoginItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000011 /* LoginItemManager.swift */; };
+		110000000000000000000010 /* DisplayDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000012 /* DisplayDevice.swift */; };
+		110000000000000000000011 /* DisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000013 /* DisplayManager.swift */; };
+		110000000000000000000012 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000015 /* CoreGraphics.framework */; };
+		110000000000000000000013 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000016 /* IOKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,9 +31,14 @@
 		120000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		120000000000000000000007 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		120000000000000000000008 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
-		120000000000000000000009 /* InputPin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InputPin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		120000000000000000000009 /* BarKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		120000000000000000000010 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		120000000000000000000011 /* LoginItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemManager.swift; sourceTree = "<group>"; };
+		120000000000000000000012 /* DisplayDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayDevice.swift; sourceTree = "<group>"; };
+		120000000000000000000013 /* DisplayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayManager.swift; sourceTree = "<group>"; };
+		120000000000000000000014 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		120000000000000000000015 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		120000000000000000000016 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +48,8 @@
 			files = (
 				110000000000000000000006 /* AppKit.framework in Frameworks */,
 				110000000000000000000007 /* CoreAudio.framework in Frameworks */,
+				110000000000000000000012 /* CoreGraphics.framework in Frameworks */,
+				110000000000000000000013 /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -48,13 +59,13 @@
 		140000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				140000000000000000000002 /* InputPin */,
+				140000000000000000000002 /* BarKit */,
 				140000000000000000000003 /* Frameworks */,
 				140000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		140000000000000000000002 /* InputPin */ = {
+		140000000000000000000002 /* BarKit */ = {
 			isa = PBXGroup;
 			children = (
 				120000000000000000000010 /* main.swift */,
@@ -62,11 +73,14 @@
 				120000000000000000000002 /* AudioManager.swift */,
 				120000000000000000000003 /* AudioDevice.swift */,
 				120000000000000000000011 /* LoginItemManager.swift */,
+				120000000000000000000012 /* DisplayDevice.swift */,
+				120000000000000000000013 /* DisplayManager.swift */,
+				120000000000000000000014 /* Bridging-Header.h */,
 				120000000000000000000004 /* Settings.swift */,
 				120000000000000000000005 /* StatusBarController.swift */,
 				120000000000000000000006 /* Info.plist */,
 			);
-			path = InputPin;
+			path = BarKit;
 			sourceTree = "<group>";
 		};
 		140000000000000000000003 /* Frameworks */ = {
@@ -74,6 +88,8 @@
 			children = (
 				120000000000000000000007 /* AppKit.framework */,
 				120000000000000000000008 /* CoreAudio.framework */,
+				120000000000000000000015 /* CoreGraphics.framework */,
+				120000000000000000000016 /* IOKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -81,7 +97,7 @@
 		140000000000000000000004 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				120000000000000000000009 /* InputPin.app */,
+				120000000000000000000009 /* BarKit.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -89,9 +105,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		150000000000000000000001 /* InputPin */ = {
+		150000000000000000000001 /* BarKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1A0000000000000000000002 /* Build configuration list for PBXNativeTarget "InputPin" */;
+			buildConfigurationList = 1A0000000000000000000002 /* Build configuration list for PBXNativeTarget "BarKit" */;
 			buildPhases = (
 				160000000000000000000001 /* Sources */,
 				130000000000000000000001 /* Frameworks */,
@@ -101,9 +117,9 @@
 			);
 			dependencies = (
 			);
-			name = InputPin;
-			productName = InputPin;
-			productReference = 120000000000000000000009 /* InputPin.app */;
+			name = BarKit;
+			productName = BarKit;
+			productReference = 120000000000000000000009 /* BarKit.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -121,7 +137,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1A0000000000000000000001 /* Build configuration list for PBXProject "InputPin" */;
+			buildConfigurationList = 1A0000000000000000000001 /* Build configuration list for PBXProject "BarKit" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -134,7 +150,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				150000000000000000000001 /* InputPin */,
+				150000000000000000000001 /* BarKit */,
 			);
 		};
 /* End PBXProject section */
@@ -161,6 +177,8 @@
 				110000000000000000000009 /* LoginItemManager.swift in Sources */,
 				110000000000000000000004 /* Settings.swift in Sources */,
 				110000000000000000000005 /* StatusBarController.swift in Sources */,
+				110000000000000000000010 /* DisplayDevice.swift in Sources */,
+				110000000000000000000011 /* DisplayManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,14 +237,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = InputPin/Info.plist;
+				INFOPLIST_FILE = BarKit/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inputpin.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.barkit.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+				SWIFT_OBJC_BRIDGING_HEADER = "BarKit/Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -237,21 +256,22 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = InputPin/Info.plist;
+				INFOPLIST_FILE = BarKit/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.inputpin.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.barkit.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+				SWIFT_OBJC_BRIDGING_HEADER = "BarKit/Bridging-Header.h";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1A0000000000000000000001 /* Build configuration list for PBXProject "InputPin" */ = {
+		1A0000000000000000000001 /* Build configuration list for PBXProject "BarKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				190000000000000000000001 /* Debug */,
@@ -260,7 +280,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1A0000000000000000000002 /* Build configuration list for PBXNativeTarget "InputPin" */ = {
+		1A0000000000000000000002 /* Build configuration list for PBXNativeTarget "BarKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				190000000000000000000003 /* Debug */,

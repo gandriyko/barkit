@@ -1,6 +1,6 @@
-# InputPin
+# BarKit
 
-InputPin is a lightweight native macOS menu-bar application that keeps a selected audio input device as the system default. It uses AppKit and CoreAudio directly, with no third-party dependencies and no background polling.
+BarKit is a lightweight native macOS menu-bar application that keeps a selected audio input device as the system default and controls display brightness. It uses native macOS frameworks directly and has no third-party dependencies.
 
 ## Requirements
 
@@ -17,44 +17,50 @@ InputPin is a lightweight native macOS menu-bar application that keeps a selecte
 The script creates an ad-hoc signed Universal application for both Apple Silicon and Intel:
 
 ```text
-build/Release/InputPin.app
+build/Release/BarKit.app
 ```
 
 Run it with:
 
 ```zsh
-open "build/Release/InputPin.app"
+open "build/Release/BarKit.app"
 ```
 
 ## Install in Applications
 
-Quit any running copy of InputPin, then copy the built application into `/Applications`:
+Quit any running copy of BarKit, then copy the built application into `/Applications`:
 
 ```zsh
-/usr/bin/ditto "build/Release/InputPin.app" "/Applications/InputPin.app"
+/usr/bin/ditto "build/Release/BarKit.app" "/Applications/BarKit.app"
 ```
 
 If macOS reports a permission error, run the same command with administrator privileges:
 
 ```zsh
-sudo /usr/bin/ditto "build/Release/InputPin.app" "/Applications/InputPin.app"
+sudo /usr/bin/ditto "build/Release/BarKit.app" "/Applications/BarKit.app"
 ```
 
 Launch the installed copy:
 
 ```zsh
-open "/Applications/InputPin.app"
+open "/Applications/BarKit.app"
 ```
 
-Use the copy in `/Applications` when enabling **Launch at Login**. After rebuilding InputPin, quit the running application and repeat the `ditto` command to update the installed copy.
+Use the copy in `/Applications` when enabling **Launch at Login**. After rebuilding BarKit, quit the running application and repeat the `ditto` command to update the installed copy.
 
 ## Usage
 
 - Click the microphone icon in the menu bar.
 - Select an item under **Input Device**. Selecting a device also enables pinning and persists its CoreAudio UID.
-- While **Pin Input** is enabled, InputPin restores the saved device if macOS changes the default input.
-- If the pinned device is disconnected, InputPin keeps its UID and restores it after reconnect.
+- While **Pin Input** is enabled, BarKit restores the saved device if macOS changes the default input.
+- If the pinned device is disconnected, BarKit keeps its UID and restores it after reconnect.
 - Disable **Pin Input** to let macOS change the input without intervention.
-- **Launch at Login** uses `SMAppService.mainApp`. Install `InputPin.app` in `/Applications` before enabling it for reliable registration.
+- Use **Display Brightness** to adjust the built-in display and compatible DDC/CI external monitors independently.
+- Displays that do not expose hardware brightness control are shown as unavailable. DDC/CI support can depend on the monitor, cable, adapter, or dock.
+- **Launch at Login** uses `SMAppService.mainApp`. Install `BarKit.app` in `/Applications` before enabling it for reliable registration.
 
-InputPin never changes the default output device, records no audio, and requests no microphone permission.
+BarKit never changes the default output device, records no audio, and requests no microphone, accessibility, or screen-recording permission.
+
+## Migrating from InputPin
+
+On its first launch, BarKit copies the saved input-pin setting and device identity from the legacy `com.inputpin.app` preferences. The old preferences are left unchanged. If InputPin was registered as a login item, disable it and enable **Launch at Login** from the installed BarKit copy so both applications do not start together.

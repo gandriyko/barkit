@@ -6,9 +6,9 @@ final class AudioManager {
     typealias StateHandler = (AudioState) -> Void
 
     private let settings: Settings
-    private let audioQueue = DispatchQueue(label: "com.inputpin.audio")
+    private let audioQueue = DispatchQueue(label: "com.barkit.app.audio")
     private let queueKey = DispatchSpecificKey<Void>()
-    private let logger = Logger(subsystem: "com.inputpin.app", category: "CoreAudio")
+    private let logger = Logger(subsystem: "com.barkit.app", category: "CoreAudio")
 
     private var defaultInputListener: AudioObjectPropertyListenerBlock!
     private var deviceListListener: AudioObjectPropertyListenerBlock!

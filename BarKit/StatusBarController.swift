@@ -3,13 +3,16 @@ import OSLog
 
 final class StatusBarController: NSObject, NSMenuDelegate {
     private let audioManager: AudioManager
+    private let displayManager: DisplayManager
     private let loginItemManager: LoginItemManager
     private let statusItem: NSStatusItem
-    private let logger = Logger(subsystem: "com.inputpin.app", category: "StatusBar")
+    private let logger = Logger(subsystem: "com.barkit.app", category: "StatusBar")
     private let menu = NSMenu()
     private let pinItem = NSMenuItem(title: "Pin Input", action: #selector(togglePin), keyEquivalent: "")
     private let deviceItem = NSMenuItem(title: "Input Device", action: nil, keyEquivalent: "")
     private let deviceMenu = NSMenu(title: "Input Device")
+    private let brightnessItem = NSMenuItem(title: "Display Brightness", action: nil, keyEquivalent: "")
+    private let brightnessMenu = NSMenu(title: "Display Brightness")
     private let launchAtLoginItem = NSMenuItem(
         title: "Launch at Login",
         action: #selector(toggleLaunchAtLogin),
@@ -23,26 +26,31 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         pinnedDeviceUID: nil,
         pinnedDeviceName: nil
     )
+    private var displayState = DisplayState(displays: [])
 
-    init(audioManager: AudioManager, loginItemManager: LoginItemManager) {
+    init(audioManager: AudioManager, displayManager: DisplayManager, loginItemManager: LoginItemManager) {
         self.audioManager = audioManager
+        self.displayManager = displayManager
         self.loginItemManager = loginItemManager
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         super.init()
 
         configureMenu()
         if statusItem.button == nil {
-            logger.error("Failed to create the InputPin status-bar button")
+            logger.error("Failed to create the BarKit status-bar button")
         } else {
-            logger.notice("Created the InputPin status-bar button")
+            logger.notice("Created the BarKit status-bar button")
         }
         audioManager.onStateChange = { [weak self] state in
+            self?.apply(state)
+        }
+        displayManager.onStateChange = { [weak self] state in
             self?.apply(state)
         }
     }
 
     private func configureMenu() {
-        let titleItem = NSMenuItem(title: "InputPin", action: nil, keyEquivalent: "")
+        let titleItem = NSMenuItem(title: "BarKit", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
         menu.addItem(.separator())
@@ -53,6 +61,10 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         deviceItem.submenu = deviceMenu
         menu.addItem(deviceItem)
 
+        brightnessItem.submenu = brightnessMenu
+        menu.addItem(brightnessItem)
+        rebuildBrightnessMenu()
+
         menu.addItem(.separator())
 
         launchAtLoginItem.target = self
@@ -60,7 +72,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
-        let quitItem = NSMenuItem(title: "Quit InputPin", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit BarKit", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
 
@@ -75,6 +87,63 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         pinItem.state = state.pinEnabled ? .on : .off
         updateStatusIcon(pinEnabled: state.pinEnabled)
         rebuildDeviceMenu(with: state.devices)
+    }
+
+    private func apply(_ state: DisplayState) {
+        displayState = state
+        rebuildBrightnessMenu()
+    }
+
+    private func rebuildBrightnessMenu() {
+        brightnessMenu.removeAllItems()
+
+        if displayState.displays.isEmpty {
+            let loadingItem = NSMenuItem(title: "Detecting Displays…", action: nil, keyEquivalent: "")
+            loadingItem.isEnabled = false
+            brightnessMenu.addItem(loadingItem)
+            return
+        }
+
+        for (index, display) in displayState.displays.enumerated() {
+            let item = NSMenuItem()
+            item.view = makeBrightnessView(for: display)
+            brightnessMenu.addItem(item)
+            if index < displayState.displays.count - 1 {
+                brightnessMenu.addItem(.separator())
+            }
+        }
+    }
+
+    private func makeBrightnessView(for display: DisplayDevice) -> NSView {
+        let view = NSView(frame: NSRect(x: 0, y: 0, width: 270, height: display.isSupported ? 58 : 38))
+        let label = NSTextField(labelWithString: display.name)
+        label.frame = NSRect(x: 14, y: display.isSupported ? 34 : 11, width: 242, height: 18)
+        label.lineBreakMode = .byTruncatingTail
+        label.toolTip = display.name
+        view.addSubview(label)
+
+        guard display.isSupported, let brightness = display.brightness else {
+            let unsupported = NSTextField(labelWithString: "Brightness control unavailable")
+            unsupported.textColor = .secondaryLabelColor
+            unsupported.font = .systemFont(ofSize: 11)
+            unsupported.frame = NSRect(x: 14, y: -2, width: 242, height: 16)
+            view.frame.size.height = 54
+            label.frame.origin.y = 28
+            view.addSubview(unsupported)
+            return view
+        }
+
+        let icon = NSImageView(frame: NSRect(x: 14, y: 8, width: 16, height: 16))
+        icon.image = NSImage(systemSymbolName: "sun.max.fill", accessibilityDescription: "Brightness")
+        icon.contentTintColor = .secondaryLabelColor
+        view.addSubview(icon)
+
+        let slider = BrightnessSlider(value: brightness, minValue: 0, maxValue: 1, target: self, action: #selector(changeBrightness(_:)))
+        slider.displayID = display.id
+        slider.isContinuous = true
+        slider.frame = NSRect(x: 38, y: 1, width: 218, height: 28)
+        view.addSubview(slider)
+        return view
     }
 
     private func rebuildDeviceMenu(with devices: [AudioDevice]) {
@@ -114,7 +183,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     private func updateStatusIcon(pinEnabled: Bool) {
         let symbolName = pinEnabled ? "mic.fill" : "mic.slash"
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "InputPin")
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "BarKit")
         image?.isTemplate = true
         image?.size = NSSize(width: 16, height: 16)
 
@@ -123,7 +192,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
         button.title = ""
-        button.toolTip = pinEnabled ? "InputPin: Pin On" : "InputPin: Pin Off"
+        button.toolTip = pinEnabled ? "BarKit: Pin On" : "BarKit: Pin Off"
     }
 
     @objc private func togglePin() {
@@ -137,6 +206,11 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         updateLaunchAtLoginItem()
+        displayManager.refresh()
+    }
+
+    @objc private func changeBrightness(_ sender: BrightnessSlider) {
+        displayManager.setBrightness(sender.doubleValue, for: sender.displayID)
     }
 
     private func updateLaunchAtLoginItem() {
@@ -169,4 +243,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func quit() {
         NSApp.terminate(nil)
     }
+}
+
+private final class BrightnessSlider: NSSlider {
+    var displayID: CGDirectDisplayID = 0
 }

@@ -11,7 +11,7 @@ final class LoginItemManager {
     }
 
     private let service = SMAppService.mainApp
-    private let logger = Logger(subsystem: "com.inputpin.app", category: "LoginItem")
+    private let logger = Logger(subsystem: "com.barkit.app", category: "LoginItem")
 
     var status: Status {
         switch service.status {
