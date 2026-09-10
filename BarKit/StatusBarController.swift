@@ -1,4 +1,5 @@
 import AppKit
+import CoreAudio
 import OSLog
 
 final class StatusBarController: NSObject, NSMenuDelegate {
@@ -11,6 +12,10 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let pinItem = NSMenuItem(title: "Pin Input", action: #selector(togglePin), keyEquivalent: "")
     private let deviceItem = NSMenuItem(title: "Input Device", action: nil, keyEquivalent: "")
     private let deviceMenu = NSMenu(title: "Input Device")
+    private let microphoneVolumeItem = NSMenuItem(title: "Microphone Volume", action: nil, keyEquivalent: "")
+    private let microphoneVolumeMenu = NSMenu(title: "Microphone Volume")
+    private let outputVolumeItem = NSMenuItem(title: "Output Volume", action: nil, keyEquivalent: "")
+    private let outputVolumeMenu = NSMenu(title: "Output Volume")
     private let brightnessItem = NSMenuItem(title: "Display Brightness", action: nil, keyEquivalent: "")
     private let brightnessMenu = NSMenu(title: "Display Brightness")
     private let launchAtLoginItem = NSMenuItem(
@@ -22,6 +27,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private var state = AudioState(
         devices: [],
         defaultDeviceUID: nil,
+        defaultOutputDevice: nil,
         pinEnabled: false,
         pinnedDeviceUID: nil,
         pinnedDeviceName: nil
@@ -61,6 +67,14 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         deviceItem.submenu = deviceMenu
         menu.addItem(deviceItem)
 
+        microphoneVolumeItem.submenu = microphoneVolumeMenu
+        menu.addItem(microphoneVolumeItem)
+        rebuildMicrophoneVolumeMenu()
+
+        outputVolumeItem.submenu = outputVolumeMenu
+        menu.addItem(outputVolumeItem)
+        rebuildOutputVolumeMenu()
+
         brightnessItem.submenu = brightnessMenu
         menu.addItem(brightnessItem)
         rebuildBrightnessMenu()
@@ -87,6 +101,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         pinItem.state = state.pinEnabled ? .on : .off
         updateStatusIcon(pinEnabled: state.pinEnabled)
         rebuildDeviceMenu(with: state.devices)
+        rebuildMicrophoneVolumeMenu()
+        rebuildOutputVolumeMenu()
     }
 
     private func apply(_ state: DisplayState) {
@@ -112,6 +128,100 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                 brightnessMenu.addItem(.separator())
             }
         }
+    }
+
+    private func rebuildMicrophoneVolumeMenu() {
+        microphoneVolumeMenu.removeAllItems()
+
+        guard let device = state.devices.first(where: { $0.uid == state.defaultDeviceUID }) else {
+            addUnavailableMicrophoneVolumeItem("No Input Device")
+            return
+        }
+        guard let volume = device.inputVolume else {
+            addUnavailableMicrophoneVolumeItem("Volume control unavailable")
+            return
+        }
+
+        let view = NSView(frame: NSRect(x: 0, y: 0, width: 270, height: 58))
+        let label = NSTextField(labelWithString: device.name)
+        label.frame = NSRect(x: 14, y: 34, width: 242, height: 18)
+        label.lineBreakMode = .byTruncatingTail
+        label.toolTip = device.name
+        view.addSubview(label)
+
+        let icon = NSImageView(frame: NSRect(x: 14, y: 8, width: 16, height: 16))
+        icon.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Microphone volume")
+        icon.contentTintColor = .secondaryLabelColor
+        view.addSubview(icon)
+
+        let slider = MicrophoneVolumeSlider(
+            value: volume,
+            minValue: 0,
+            maxValue: 1,
+            target: self,
+            action: #selector(changeMicrophoneVolume(_:))
+        )
+        slider.deviceID = device.id
+        slider.isContinuous = true
+        slider.frame = NSRect(x: 38, y: 1, width: 218, height: 28)
+        view.addSubview(slider)
+
+        let item = NSMenuItem()
+        item.view = view
+        microphoneVolumeMenu.addItem(item)
+    }
+
+    private func addUnavailableMicrophoneVolumeItem(_ title: String) {
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        microphoneVolumeMenu.addItem(item)
+    }
+
+    private func rebuildOutputVolumeMenu() {
+        outputVolumeMenu.removeAllItems()
+
+        guard let device = state.defaultOutputDevice else {
+            addUnavailableOutputVolumeItem("No Output Device")
+            return
+        }
+        guard let volume = device.volume else {
+            addUnavailableOutputVolumeItem("Volume control unavailable")
+            return
+        }
+
+        let view = NSView(frame: NSRect(x: 0, y: 0, width: 270, height: 58))
+        let label = NSTextField(labelWithString: device.name)
+        label.frame = NSRect(x: 14, y: 34, width: 242, height: 18)
+        label.lineBreakMode = .byTruncatingTail
+        label.toolTip = device.name
+        view.addSubview(label)
+
+        let icon = NSImageView(frame: NSRect(x: 14, y: 8, width: 16, height: 16))
+        icon.image = NSImage(systemSymbolName: "speaker.wave.2.fill", accessibilityDescription: "Output volume")
+        icon.contentTintColor = .secondaryLabelColor
+        view.addSubview(icon)
+
+        let slider = OutputVolumeSlider(
+            value: volume,
+            minValue: 0,
+            maxValue: 1,
+            target: self,
+            action: #selector(changeOutputVolume(_:))
+        )
+        slider.deviceID = device.id
+        slider.isContinuous = true
+        slider.frame = NSRect(x: 38, y: 1, width: 218, height: 28)
+        view.addSubview(slider)
+
+        let item = NSMenuItem()
+        item.view = view
+        outputVolumeMenu.addItem(item)
+    }
+
+    private func addUnavailableOutputVolumeItem(_ title: String) {
+        let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        item.isEnabled = false
+        outputVolumeMenu.addItem(item)
     }
 
     private func makeBrightnessView(for display: DisplayDevice) -> NSView {
@@ -206,11 +316,20 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         updateLaunchAtLoginItem()
+        audioManager.refresh()
         displayManager.refresh()
     }
 
     @objc private func changeBrightness(_ sender: BrightnessSlider) {
         displayManager.setBrightness(sender.doubleValue, for: sender.displayID)
+    }
+
+    @objc private func changeMicrophoneVolume(_ sender: MicrophoneVolumeSlider) {
+        audioManager.setInputVolume(sender.doubleValue, for: sender.deviceID)
+    }
+
+    @objc private func changeOutputVolume(_ sender: OutputVolumeSlider) {
+        audioManager.setOutputVolume(sender.doubleValue, for: sender.deviceID)
     }
 
     private func updateLaunchAtLoginItem() {
@@ -247,4 +366,12 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
 private final class BrightnessSlider: NSSlider {
     var displayID: CGDirectDisplayID = 0
+}
+
+private final class MicrophoneVolumeSlider: NSSlider {
+    var deviceID: AudioDeviceID = kAudioObjectUnknown
+}
+
+private final class OutputVolumeSlider: NSSlider {
+    var deviceID: AudioDeviceID = kAudioObjectUnknown
 }

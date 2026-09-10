@@ -68,6 +68,12 @@ final class AudioManager {
         }
     }
 
+    func refresh() {
+        performOnAudioQueue { [weak self] in
+            self?.refreshState(enforcePin: true)
+        }
+    }
+
     func stopMonitoring() {
         performSynchronously {
             removeListenersIfNeeded()
@@ -89,6 +95,18 @@ final class AudioManager {
             self.settings.pinEnabled = true
             _ = self.writeDefaultInputDeviceID(device.id)
             self.publishState()
+        }
+    }
+
+    func setInputVolume(_ volume: Double, for deviceID: AudioDeviceID) {
+        performOnAudioQueue { [weak self] in
+            self?.writeVolume(volume, for: deviceID, scope: kAudioDevicePropertyScopeInput)
+        }
+    }
+
+    func setOutputVolume(_ volume: Double, for deviceID: AudioDeviceID) {
+        performOnAudioQueue { [weak self] in
+            self?.writeVolume(volume, for: deviceID, scope: kAudioDevicePropertyScopeOutput)
         }
     }
 
@@ -149,12 +167,14 @@ final class AudioManager {
                 id: device.id,
                 uid: device.uid,
                 name: device.name,
-                isDefault: device.id == defaultID
+                isDefault: device.id == defaultID,
+                inputVolume: readVolume(for: device.id, scope: kAudioDevicePropertyScopeInput)
             )
         }
         let state = AudioState(
             devices: devices,
             defaultDeviceUID: devices.first(where: { $0.isDefault })?.uid,
+            defaultOutputDevice: readDefaultOutputDevice(),
             pinEnabled: settings.pinEnabled,
             pinnedDeviceUID: settings.pinnedDeviceUID,
             pinnedDeviceName: settings.pinnedDeviceName
@@ -199,7 +219,13 @@ final class AudioManager {
                   let name = stringProperty(kAudioObjectPropertyName, for: deviceID) else {
                 return nil
             }
-            return AudioDevice(id: deviceID, uid: uid, name: name, isDefault: deviceID == defaultID)
+            return AudioDevice(
+                id: deviceID,
+                uid: uid,
+                name: name,
+                isDefault: deviceID == defaultID,
+                inputVolume: readVolume(for: deviceID, scope: kAudioDevicePropertyScopeInput)
+            )
         }
         .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
@@ -216,6 +242,35 @@ final class AudioManager {
         let status = AudioObjectGetPropertyData(systemObject, &address, 0, nil, &dataSize, &deviceID)
         guard status == noErr else {
             logError(status, operation: "read default input")
+            return nil
+        }
+        return deviceID == kAudioObjectUnknown ? nil : deviceID
+    }
+
+    private func readDefaultOutputDevice() -> AudioVolumeDevice? {
+        guard let deviceID = readDefaultOutputDeviceID(),
+              let name = stringProperty(kAudioObjectPropertyName, for: deviceID) else {
+            return nil
+        }
+        return AudioVolumeDevice(
+            id: deviceID,
+            name: name,
+            volume: readVolume(for: deviceID, scope: kAudioDevicePropertyScopeOutput)
+        )
+    }
+
+    private func readDefaultOutputDeviceID() -> AudioDeviceID? {
+        let systemObject = AudioObjectID(kAudioObjectSystemObject)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var deviceID = AudioDeviceID(kAudioObjectUnknown)
+        var dataSize = UInt32(MemoryLayout<AudioDeviceID>.size)
+        let status = AudioObjectGetPropertyData(systemObject, &address, 0, nil, &dataSize, &deviceID)
+        guard status == noErr else {
+            logError(status, operation: "read default output")
             return nil
         }
         return deviceID == kAudioObjectUnknown ? nil : deviceID
@@ -257,10 +312,96 @@ final class AudioManager {
         return true
     }
 
+    private func volumeAddress(
+        scope: AudioObjectPropertyScope,
+        element: AudioObjectPropertyElement = kAudioObjectPropertyElementMain
+    ) -> AudioObjectPropertyAddress {
+        AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyVolumeScalar,
+            mScope: scope,
+            mElement: element
+        )
+    }
+
+    private func readVolume(for deviceID: AudioDeviceID, scope: AudioObjectPropertyScope) -> Double? {
+        var channelVolumes: [Double] = []
+        for address in volumeAddresses(for: deviceID, scope: scope) {
+            var mutableAddress = address
+            var volume: Float32 = 0
+            var dataSize = UInt32(MemoryLayout<Float32>.size)
+            let status = AudioObjectGetPropertyData(deviceID, &mutableAddress, 0, nil, &dataSize, &volume)
+            guard status == noErr else { continue }
+
+            let normalizedVolume = min(max(Double(volume), 0), 1)
+            if address.mElement == kAudioObjectPropertyElementMain {
+                return normalizedVolume
+            }
+            channelVolumes.append(normalizedVolume)
+        }
+
+        guard !channelVolumes.isEmpty else { return nil }
+        return channelVolumes.reduce(0, +) / Double(channelVolumes.count)
+    }
+
+    private func writeVolume(_ volume: Double, for deviceID: AudioDeviceID, scope: AudioObjectPropertyScope) {
+        var value = Float32(min(max(volume, 0), 1))
+        let dataSize = UInt32(MemoryLayout<Float32>.size)
+        var writableAddresses: [AudioObjectPropertyAddress] = []
+
+        for address in volumeAddresses(for: deviceID, scope: scope) {
+            var mutableAddress = address
+            var isSettable: DarwinBoolean = false
+            let status = AudioObjectIsPropertySettable(deviceID, &mutableAddress, &isSettable)
+            guard status == noErr, isSettable.boolValue else { continue }
+            if address.mElement == kAudioObjectPropertyElementMain {
+                writableAddresses = [address]
+                break
+            }
+            writableAddresses.append(address)
+        }
+
+        guard !writableAddresses.isEmpty else {
+            logger.error("The \(scope == kAudioDevicePropertyScopeInput ? "input" : "output") volume is not settable for device \(deviceID)")
+            return
+        }
+
+        for address in writableAddresses {
+            var mutableAddress = address
+            let status = AudioObjectSetPropertyData(deviceID, &mutableAddress, 0, nil, dataSize, &value)
+            if status != noErr {
+                logError(status, operation: "set volume")
+            }
+        }
+    }
+
+    private func volumeAddresses(for deviceID: AudioDeviceID, scope: AudioObjectPropertyScope) -> [AudioObjectPropertyAddress] {
+        var addresses: [AudioObjectPropertyAddress] = []
+        let masterAddress = volumeAddress(scope: scope)
+        var mutableMasterAddress = masterAddress
+        if AudioObjectHasProperty(deviceID, &mutableMasterAddress) {
+            addresses.append(masterAddress)
+        }
+
+        let channelCount = channelCount(for: deviceID, scope: scope)
+        guard channelCount > 0 else { return addresses }
+        for channel in 1 ... channelCount {
+            let channelAddress = volumeAddress(scope: scope, element: channel)
+            var mutableAddress = channelAddress
+            if AudioObjectHasProperty(deviceID, &mutableAddress) {
+                addresses.append(channelAddress)
+            }
+        }
+        return addresses
+    }
+
     private func inputChannelCount(for deviceID: AudioDeviceID) -> UInt32 {
+        channelCount(for: deviceID, scope: kAudioDevicePropertyScopeInput)
+    }
+
+    private func channelCount(for deviceID: AudioDeviceID, scope: AudioObjectPropertyScope) -> UInt32 {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyStreamConfiguration,
-            mScope: kAudioDevicePropertyScopeInput,
+            mScope: scope,
             mElement: kAudioObjectPropertyElementMain
         )
         var dataSize: UInt32 = 0

@@ -55,6 +55,8 @@ Use the copy in `/Applications` when enabling **Launch at Login**. After rebuild
 - While **Pin Input** is enabled, BarKit restores the saved device if macOS changes the default input.
 - If the pinned device is disconnected, BarKit keeps its UID and restores it after reconnect.
 - Disable **Pin Input** to let macOS change the input without intervention.
+- Use **Microphone Volume** to adjust the input level of the current system microphone. Devices that do not expose an adjustable input level are shown as unavailable.
+- Use **Output Volume** to adjust the output level of the current system sound device.
 - Use **Display Brightness** to adjust the built-in display and compatible DDC/CI external monitors independently.
 - Displays that do not expose hardware brightness control are shown as unavailable. DDC/CI support can depend on the monitor, cable, adapter, or dock.
 - **Launch at Login** uses `SMAppService.mainApp`. Install `BarKit.app` in `/Applications` before enabling it for reliable registration.
