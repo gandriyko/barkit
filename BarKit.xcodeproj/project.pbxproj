@@ -20,6 +20,7 @@
 		110000000000000000000011 /* DisplayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000013 /* DisplayManager.swift */; };
 		110000000000000000000012 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000015 /* CoreGraphics.framework */; };
 		110000000000000000000013 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000016 /* IOKit.framework */; };
+		110000000000000000000014 /* BarKit.icns in Resources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000017 /* BarKit.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		120000000000000000000014 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		120000000000000000000015 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		120000000000000000000016 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		120000000000000000000017 /* BarKit.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = BarKit.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 				120000000000000000000004 /* Settings.swift */,
 				120000000000000000000005 /* StatusBarController.swift */,
 				120000000000000000000006 /* Info.plist */,
+				120000000000000000000017 /* BarKit.icns */,
 			);
 			path = BarKit;
 			sourceTree = "<group>";
@@ -160,6 +163,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				110000000000000000000014 /* BarKit.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

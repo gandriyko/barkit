@@ -292,10 +292,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     private func updateStatusIcon(pinEnabled: Bool) {
-        let symbolName = pinEnabled ? "mic.fill" : "mic.slash"
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "BarKit")
-        image?.isTemplate = true
-        image?.size = NSSize(width: 16, height: 16)
+        let image = makeStatusIcon(pinEnabled: pinEnabled)
 
         guard let button = statusItem.button else { return }
         button.image = image
@@ -303,6 +300,42 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         button.imageScaling = .scaleProportionallyDown
         button.title = ""
         button.toolTip = pinEnabled ? "BarKit: Pin On" : "BarKit: Pin Off"
+    }
+
+    private func makeStatusIcon(pinEnabled: Bool) -> NSImage? {
+        let microphoneName = pinEnabled ? "mic.fill" : "mic.slash"
+        let configuration = NSImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+
+        guard
+            let microphone = NSImage(
+                systemSymbolName: microphoneName,
+                accessibilityDescription: "BarKit"
+            )?.withSymbolConfiguration(configuration),
+            let brightness = NSImage(
+                systemSymbolName: "sun.max.fill",
+                accessibilityDescription: nil
+            )?.withSymbolConfiguration(configuration)
+        else {
+            return nil
+        }
+
+        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
+            microphone.draw(
+                in: NSRect(x: 0, y: 0, width: 12, height: 16),
+                from: .zero,
+                operation: .sourceOver,
+                fraction: 1
+            )
+            brightness.draw(
+                in: NSRect(x: 10, y: 9, width: 8, height: 8),
+                from: .zero,
+                operation: .sourceOver,
+                fraction: 1
+            )
+            return true
+        }
+        image.isTemplate = true
+        return image
     }
 
     @objc private func togglePin() {

@@ -22,7 +22,8 @@ for required_file in \
     "$source_dir/LoginItemManager.swift" \
     "$source_dir/Settings.swift" \
     "$source_dir/StatusBarController.swift" \
-    "$source_dir/Info.plist"; do
+    "$source_dir/Info.plist" \
+    "$source_dir/BarKit.icns"; do
     if [[ ! -f "$required_file" ]]; then
         print -u2 "Missing required source file: $required_file"
         exit 1
@@ -84,6 +85,7 @@ mkdir -p "$app_path/Contents/MacOS" "$app_path/Contents/Resources"
     -output "$app_path/Contents/MacOS/BarKit"
 
 cp "$source_dir/Info.plist" "$app_path/Contents/Info.plist"
+cp "$source_dir/BarKit.icns" "$app_path/Contents/Resources/BarKit.icns"
 /usr/libexec/PlistBuddy -c "Set :CFBundleDevelopmentRegion en" "$app_path/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleExecutable BarKit" "$app_path/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName BarKit" "$app_path/Contents/Info.plist"
