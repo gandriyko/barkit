@@ -1,6 +1,6 @@
 # BarKit
 
-BarKit is a lightweight native macOS menu-bar application that keeps a selected audio input device as the system default and controls display brightness. It uses native macOS frameworks directly and has no third-party dependencies.
+BarKit is a lightweight native macOS menu-bar application that keeps a selected audio input device as the system default, controls display brightness, and can prevent idle sleep. It uses native macOS frameworks directly and has no third-party dependencies.
 
 ## Requirements
 
@@ -59,6 +59,7 @@ Use the copy in `/Applications` when enabling **Launch at Login**. After rebuild
 - Use **Output Volume** to adjust the output level of the current system sound device.
 - Use **Display Brightness** to adjust the built-in display and compatible DDC/CI external monitors independently.
 - Displays that do not expose hardware brightness control are shown as unavailable. DDC/CI support can depend on the monitor, cable, adapter, or dock.
+- Use **Keep Mac Awake** to prevent idle sleep for 30 minutes, 1 hour, or until you turn it off. The display can still sleep normally. The setting ends when BarKit quits and is not restored on relaunch.
 - **Launch at Login** uses `SMAppService.mainApp`. Install `BarKit.app` in `/Applications` before enabling it for reliable registration.
 
 BarKit never changes the default output device, records no audio, and requests no microphone, accessibility, or screen-recording permission.

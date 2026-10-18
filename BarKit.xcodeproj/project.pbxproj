@@ -21,6 +21,7 @@
 		110000000000000000000012 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000015 /* CoreGraphics.framework */; };
 		110000000000000000000013 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120000000000000000000016 /* IOKit.framework */; };
 		110000000000000000000014 /* BarKit.icns in Resources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000017 /* BarKit.icns */; };
+		110000000000000000000015 /* KeepAwakeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120000000000000000000018 /* KeepAwakeManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +42,7 @@
 		120000000000000000000015 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		120000000000000000000016 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		120000000000000000000017 /* BarKit.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = BarKit.icns; sourceTree = "<group>"; };
+		120000000000000000000018 /* KeepAwakeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAwakeManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,7 @@
 				120000000000000000000002 /* AudioManager.swift */,
 				120000000000000000000003 /* AudioDevice.swift */,
 				120000000000000000000011 /* LoginItemManager.swift */,
+				120000000000000000000018 /* KeepAwakeManager.swift */,
 				120000000000000000000012 /* DisplayDevice.swift */,
 				120000000000000000000013 /* DisplayManager.swift */,
 				120000000000000000000014 /* Bridging-Header.h */,
@@ -179,6 +182,7 @@
 				110000000000000000000002 /* AudioManager.swift in Sources */,
 				110000000000000000000003 /* AudioDevice.swift in Sources */,
 				110000000000000000000009 /* LoginItemManager.swift in Sources */,
+				110000000000000000000015 /* KeepAwakeManager.swift in Sources */,
 				110000000000000000000004 /* Settings.swift in Sources */,
 				110000000000000000000005 /* StatusBarController.swift in Sources */,
 				110000000000000000000010 /* DisplayDevice.swift in Sources */,

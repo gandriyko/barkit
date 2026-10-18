@@ -20,6 +20,7 @@ for required_file in \
     "$source_dir/DisplayManager.swift" \
     "$source_dir/Bridging-Header.h" \
     "$source_dir/LoginItemManager.swift" \
+    "$source_dir/KeepAwakeManager.swift" \
     "$source_dir/Settings.swift" \
     "$source_dir/StatusBarController.swift" \
     "$source_dir/Info.plist" \
@@ -44,6 +45,7 @@ sources=(
     "$source_dir/DisplayDevice.swift"
     "$source_dir/DisplayManager.swift"
     "$source_dir/LoginItemManager.swift"
+    "$source_dir/KeepAwakeManager.swift"
     "$source_dir/Settings.swift"
     "$source_dir/StatusBarController.swift"
 )
