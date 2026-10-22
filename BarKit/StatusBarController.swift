@@ -6,7 +6,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let audioManager: AudioManager
     private let displayManager: DisplayManager
     private let loginItemManager: LoginItemManager
-    private let keepAwakeManager = KeepAwakeManager()
+    private let keepAwakeManager = KeepAwakeManager(settings: Settings())
     private let statusItem: NSStatusItem
     private let logger = Logger(subsystem: "com.barkit.app", category: "StatusBar")
     private let menu = NSMenu()
@@ -25,6 +25,12 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let keepAwake30MinuteItem = NSMenuItem(title: "30 Minutes", action: #selector(keepAwakeFor30Minutes), keyEquivalent: "")
     private let keepAwakeOneHourItem = NSMenuItem(title: "1 Hour", action: #selector(keepAwakeForOneHour), keyEquivalent: "")
     private let keepAwakeUntilOffItem = NSMenuItem(title: "Until Turned Off", action: #selector(keepAwakeUntilTurnedOff), keyEquivalent: "")
+    private let keepDisplayOnItem = NSMenuItem(title: "Keep Display On", action: #selector(toggleKeepDisplayOn), keyEquivalent: "")
+    private let keepAwakeOnPowerItem = NSMenuItem(
+        title: "Turn On When Connected to Power",
+        action: #selector(toggleKeepAwakeOnPower),
+        keyEquivalent: ""
+    )
     private let launchAtLoginItem = NSMenuItem(
         title: "Launch at Login",
         action: #selector(toggleLaunchAtLogin),
@@ -93,6 +99,11 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         keepAwakeItem.submenu = keepAwakeMenu
         menu.addItem(keepAwakeItem)
         for item in [keepAwakeOffItem, keepAwake30MinuteItem, keepAwakeOneHourItem, keepAwakeUntilOffItem] {
+            item.target = self
+            keepAwakeMenu.addItem(item)
+        }
+        keepAwakeMenu.addItem(.separator())
+        for item in [keepDisplayOnItem, keepAwakeOnPowerItem] {
             item.target = self
             keepAwakeMenu.addItem(item)
         }
@@ -379,6 +390,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         keepAwake30MinuteItem.state = isActive && keepAwakeManager.selectedDuration == 30 * 60 ? .on : .off
         keepAwakeOneHourItem.state = isActive && keepAwakeManager.selectedDuration == 60 * 60 ? .on : .off
         keepAwakeUntilOffItem.state = isActive && keepAwakeManager.selectedDuration == nil ? .on : .off
+        keepDisplayOnItem.state = keepAwakeManager.keepsDisplayAwake ? .on : .off
+        keepAwakeOnPowerItem.state = keepAwakeManager.startsOnPower ? .on : .off
 
         if let endDate = keepAwakeManager.endDate {
             let minutesLeft = max(1, Int(ceil(endDate.timeIntervalSinceNow / 60)))
@@ -402,6 +415,16 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     @objc private func keepAwakeUntilTurnedOff() {
         keepAwakeManager.start(duration: nil)
+    }
+
+    @objc private func toggleKeepDisplayOn() {
+        keepAwakeManager.keepsDisplayAwake.toggle()
+        updateKeepAwakeMenu()
+    }
+
+    @objc private func toggleKeepAwakeOnPower() {
+        keepAwakeManager.startsOnPower.toggle()
+        updateKeepAwakeMenu()
     }
 
     @objc private func changeBrightness(_ sender: BrightnessSlider) {

@@ -6,6 +6,8 @@ final class Settings {
         static let pinnedDeviceUID = "pinnedDeviceUID"
         static let pinnedDeviceName = "pinnedDeviceName"
         static let didMigrateInputPinSettings = "didMigrateInputPinSettings"
+        static let keepDisplayAwake = "keepDisplayAwake"
+        static let keepAwakeOnPower = "keepAwakeOnPower"
     }
 
     private static let legacyBundleIdentifier = "com.inputpin.app"
@@ -45,5 +47,15 @@ final class Settings {
     var pinnedDeviceName: String? {
         get { defaults.string(forKey: Key.pinnedDeviceName) }
         set { defaults.set(newValue, forKey: Key.pinnedDeviceName) }
+    }
+
+    var keepDisplayAwake: Bool {
+        get { defaults.bool(forKey: Key.keepDisplayAwake) }
+        set { defaults.set(newValue, forKey: Key.keepDisplayAwake) }
+    }
+
+    var keepAwakeOnPower: Bool {
+        get { defaults.bool(forKey: Key.keepAwakeOnPower) }
+        set { defaults.set(newValue, forKey: Key.keepAwakeOnPower) }
     }
 }
