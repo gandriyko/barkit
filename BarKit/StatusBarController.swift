@@ -62,6 +62,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         }
         keepAwakeManager.onStateChange = { [weak self] in
             self?.updateKeepAwakeMenu()
+            self?.updateStatusIcon()
         }
     }
 
@@ -110,14 +111,14 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
         menu.delegate = self
         statusItem.menu = menu
-        updateStatusIcon(pinEnabled: false)
+        updateStatusIcon()
         updateLaunchAtLoginItem()
     }
 
     private func apply(_ state: AudioState) {
         self.state = state
         pinItem.state = state.pinEnabled ? .on : .off
-        updateStatusIcon(pinEnabled: state.pinEnabled)
+        updateStatusIcon()
         rebuildDeviceMenu(with: state.devices)
         rebuildMicrophoneVolumeMenu()
         rebuildOutputVolumeMenu()
@@ -309,51 +310,50 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         }
     }
 
-    private func updateStatusIcon(pinEnabled: Bool) {
-        let image = makeStatusIcon(pinEnabled: pinEnabled)
-
+    private func updateStatusIcon() {
         guard let button = statusItem.button else { return }
-        button.image = image
+        let isAwake = keepAwakeManager.isActive
+        let tools = NSImage(
+            systemSymbolName: "wrench.and.screwdriver",
+            accessibilityDescription: "BarKit"
+        )?.withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 14, weight: .regular))
+        let badge = NSImage(
+            systemSymbolName: "exclamationmark.circle.fill",
+            accessibilityDescription: "Keep Awake On"
+        )?.withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 9, weight: .bold))
+
+        if isAwake, let tools, let badge {
+            // Exclamation badge in the top-right corner, with a gap cut around it so it reads apart from the tools.
+            let image = NSImage(size: NSSize(width: 22, height: 18), flipped: false) { rect in
+                let toolsSize = tools.size
+                tools.draw(
+                    in: NSRect(x: 0, y: (rect.height - toolsSize.height) / 2, width: toolsSize.width, height: toolsSize.height),
+                    from: .zero,
+                    operation: .sourceOver,
+                    fraction: 1
+                )
+                let badgeSize = badge.size
+                let badgeRect = NSRect(
+                    x: rect.width - badgeSize.width,
+                    y: rect.height - badgeSize.height,
+                    width: badgeSize.width,
+                    height: badgeSize.height
+                )
+                NSGraphicsContext.current?.compositingOperation = .destinationOut
+                NSBezierPath(ovalIn: badgeRect.insetBy(dx: -1.5, dy: -1.5)).fill()
+                NSGraphicsContext.current?.compositingOperation = .sourceOver
+                badge.draw(in: badgeRect, from: .zero, operation: .sourceOver, fraction: 1)
+                return true
+            }
+            image.isTemplate = true
+            button.image = image
+        } else {
+            button.image = tools
+        }
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
         button.title = ""
-        button.toolTip = pinEnabled ? "BarKit: Pin On" : "BarKit: Pin Off"
-    }
-
-    private func makeStatusIcon(pinEnabled: Bool) -> NSImage? {
-        let microphoneName = pinEnabled ? "mic.fill" : "mic.slash"
-        let configuration = NSImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
-
-        guard
-            let microphone = NSImage(
-                systemSymbolName: microphoneName,
-                accessibilityDescription: "BarKit"
-            )?.withSymbolConfiguration(configuration),
-            let brightness = NSImage(
-                systemSymbolName: "sun.max.fill",
-                accessibilityDescription: nil
-            )?.withSymbolConfiguration(configuration)
-        else {
-            return nil
-        }
-
-        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
-            microphone.draw(
-                in: NSRect(x: 0, y: 0, width: 12, height: 16),
-                from: .zero,
-                operation: .sourceOver,
-                fraction: 1
-            )
-            brightness.draw(
-                in: NSRect(x: 10, y: 9, width: 8, height: 8),
-                from: .zero,
-                operation: .sourceOver,
-                fraction: 1
-            )
-            return true
-        }
-        image.isTemplate = true
-        return image
+        button.toolTip = "BarKit: Pin \(state.pinEnabled ? "On" : "Off")" + (isAwake ? ", Keep Awake On" : "")
     }
 
     @objc private func togglePin() {
