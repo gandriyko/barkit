@@ -22,8 +22,13 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private let keepAwakeItem = NSMenuItem(title: "Keep Mac Awake", action: nil, keyEquivalent: "")
     private let keepAwakeMenu = NSMenu(title: "Keep Mac Awake")
     private let keepAwakeOffItem = NSMenuItem(title: "Off", action: #selector(stopKeepingAwake), keyEquivalent: "")
-    private let keepAwake30MinuteItem = NSMenuItem(title: "30 Minutes", action: #selector(keepAwakeFor30Minutes), keyEquivalent: "")
-    private let keepAwakeOneHourItem = NSMenuItem(title: "1 Hour", action: #selector(keepAwakeForOneHour), keyEquivalent: "")
+    private let keepAwakeTimedItems = [
+        ("30 Minutes", 30), ("1 Hour", 60), ("2 Hours", 120), ("3 Hours", 180), ("5 Hours", 300),
+    ].map { title, minutes in
+        let item = NSMenuItem(title: title, action: #selector(keepAwakeForDuration(_:)), keyEquivalent: "")
+        item.tag = minutes * 60
+        return item
+    }
     private let keepAwakeUntilOffItem = NSMenuItem(title: "Until Turned Off", action: #selector(keepAwakeUntilTurnedOff), keyEquivalent: "")
     private let keepDisplayOnItem = NSMenuItem(title: "Keep Display On", action: #selector(toggleKeepDisplayOn), keyEquivalent: "")
     private let keepAwakeOnPowerItem = NSMenuItem(
@@ -98,7 +103,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
         keepAwakeItem.submenu = keepAwakeMenu
         menu.addItem(keepAwakeItem)
-        for item in [keepAwakeOffItem, keepAwake30MinuteItem, keepAwakeOneHourItem, keepAwakeUntilOffItem] {
+        for item in [keepAwakeOffItem] + keepAwakeTimedItems + [keepAwakeUntilOffItem] {
             item.target = self
             keepAwakeMenu.addItem(item)
         }
@@ -387,8 +392,9 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         let isActive = keepAwakeManager.isActive
         keepAwakeItem.state = isActive ? .on : .off
         keepAwakeOffItem.state = isActive ? .off : .on
-        keepAwake30MinuteItem.state = isActive && keepAwakeManager.selectedDuration == 30 * 60 ? .on : .off
-        keepAwakeOneHourItem.state = isActive && keepAwakeManager.selectedDuration == 60 * 60 ? .on : .off
+        for item in keepAwakeTimedItems {
+            item.state = isActive && keepAwakeManager.selectedDuration == TimeInterval(item.tag) ? .on : .off
+        }
         keepAwakeUntilOffItem.state = isActive && keepAwakeManager.selectedDuration == nil ? .on : .off
         keepDisplayOnItem.state = keepAwakeManager.keepsDisplayAwake ? .on : .off
         keepAwakeOnPowerItem.state = keepAwakeManager.startsOnPower ? .on : .off
@@ -405,12 +411,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         keepAwakeManager.stop()
     }
 
-    @objc private func keepAwakeFor30Minutes() {
-        keepAwakeManager.start(duration: 30 * 60)
-    }
-
-    @objc private func keepAwakeForOneHour() {
-        keepAwakeManager.start(duration: 60 * 60)
+    @objc private func keepAwakeForDuration(_ sender: NSMenuItem) {
+        keepAwakeManager.start(duration: TimeInterval(sender.tag))
     }
 
     @objc private func keepAwakeUntilTurnedOff() {
