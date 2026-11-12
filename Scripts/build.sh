@@ -8,7 +8,7 @@ source_dir="$project_root/BarKit"
 build_root="$project_root/build"
 output_dir="$build_root/Release"
 app_path="$output_dir/BarKit.app"
-project_cache_key="$(print -n -- "$project_root" | shasum -a 256 | cut -c 1-12)"
+project_cache_key="$(printf '%s' "$project_root" | shasum -a 256 | cut -c 1-12)"
 module_cache="$build_root/module-cache/$project_cache_key"
 
 for required_file in \
@@ -26,7 +26,7 @@ for required_file in \
     "$source_dir/Info.plist" \
     "$source_dir/BarKit.icns"; do
     if [[ ! -f "$required_file" ]]; then
-        print -u2 "Missing required source file: $required_file"
+        printf 'Missing required source file: %s\n' "$required_file" >&2
         exit 1
     fi
 done
@@ -72,10 +72,10 @@ compile_architecture() {
         -framework ServiceManagement
 }
 
-print "Building BarKit for arm64..."
+printf 'Building BarKit for arm64...\n'
 compile_architecture arm64
 
-print "Building BarKit for x86_64..."
+printf 'Building BarKit for x86_64...\n'
 compile_architecture x86_64
 
 rm -rf "$app_path"
@@ -98,5 +98,5 @@ cp "$source_dir/BarKit.icns" "$app_path/Contents/Resources/BarKit.icns"
 
 /usr/bin/codesign --force --sign - --timestamp=none "$app_path"
 
-print "Built universal app: $app_path"
-print "Run it with: open \"$app_path\""
+printf 'Built universal app: %s\n' "$app_path"
+printf 'Run it with: open "%s"\n' "$app_path"
