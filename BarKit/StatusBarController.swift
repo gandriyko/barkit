@@ -77,7 +77,33 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         }
     }
 
+    private static func symbol(_ name: String, _ description: String) -> NSImage? {
+        NSImage(systemSymbolName: name, accessibilityDescription: description)?
+            .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 13, weight: .regular))
+    }
+
+    private func configureMenuIcons() {
+        let icons: [(NSMenuItem, String)] = [
+            (pinItem, "pin"),
+            (deviceItem, "mic"),
+            (microphoneVolumeItem, "waveform"),
+            (outputVolumeItem, "speaker.wave.2"),
+            (brightnessItem, "sun.max"),
+            (keepAwakeItem, "cup.and.saucer"),
+            (keepAwakeOffItem, "moon.zzz"),
+            (keepAwakeUntilOffItem, "infinity"),
+            (keepDisplayOnItem, "display"),
+            (keepAwakeOnPowerItem, "powerplug"),
+            (launchAtLoginItem, "power"),
+        ] + keepAwakeTimedItems.map { ($0, "timer") }
+        for (item, name) in icons {
+            item.image = Self.symbol(name, item.title)
+        }
+    }
+
     private func configureMenu() {
+        configureMenuIcons()
+
         let titleItem = NSMenuItem(title: "BarKit", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
@@ -123,6 +149,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
         let quitItem = NSMenuItem(title: "Quit BarKit", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
+        quitItem.image = Self.symbol("rectangle.portrait.and.arrow.right", "Quit BarKit")
         menu.addItem(quitItem)
 
         menu.delegate = self
@@ -304,6 +331,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                 keyEquivalent: ""
             )
             pinnedItem.isEnabled = false
+            pinnedItem.image = Self.symbol("exclamationmark.triangle", "Unavailable")
             deviceMenu.addItem(pinnedItem)
             if !devices.isEmpty {
                 deviceMenu.addItem(.separator())
@@ -321,6 +349,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             let item = NSMenuItem(title: device.name, action: #selector(selectDevice(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = device.uid
+            item.image = Self.symbol("mic", device.name)
             item.state = device.uid == state.defaultDeviceUID ? .on : .off
             deviceMenu.addItem(item)
         }
