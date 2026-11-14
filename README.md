@@ -57,24 +57,33 @@ If you get a permission error writing to `/Applications`, run the install with `
 
 ## Usage
 
-Click the BarKit icon in the menu bar. A badge appears on it while Keep Awake is on.
+Click the <img src="docs/menu-icons/wrench.and.screwdriver.png" width="18" alt=""> BarKit icon in the menu bar. A badge appears on it while Keep Awake is on.
 
-**Microphone**
-- Choose a device under **Input Device**. Choosing one turns on **Pin Input** and saves the device.
-- While **Pin Input** is on, BarKit switches back to your device whenever macOS changes the default input. A disconnected device is restored when it reconnects.
-- Turn off **Pin Input** to let macOS choose the input again.
+### Menu at a glance
 
-**Volume and brightness**
-- **Microphone Volume** and **Output Volume** adjust the current system devices. Devices without an adjustable level show as unavailable.
-- **Display Brightness** shows a slider for each display. DDC/CI support depends on the monitor, cable, adapter or dock.
+| | Item | What it does |
+|:-:|---|---|
+| <img src="docs/menu-icons/pin.png" width="18" alt=""> | **Pin Input** | Keeps the chosen microphone as the system default |
+| <img src="docs/menu-icons/mic.png" width="18" alt=""> | **Input Device** | Lists microphones; choosing one also turns on Pin Input |
+| <img src="docs/menu-icons/waveform.png" width="18" alt=""> | **Microphone Volume** | Input level slider for the current microphone |
+| <img src="docs/menu-icons/speaker.wave.2.png" width="18" alt=""> | **Output Volume** | Volume slider for the current output device |
+| <img src="docs/menu-icons/sun.max.png" width="18" alt=""> | **Display Brightness** | A slider for each display |
+| <img src="docs/menu-icons/cup.and.saucer.png" width="18" alt=""> | **Keep Mac Awake** | Shows the time left while a timed session runs |
+| <img src="docs/menu-icons/moon.zzz.png" width="18" alt=""> | &nbsp;&nbsp;Off | Lets the Mac sleep normally |
+| <img src="docs/menu-icons/timer.png" width="18" alt=""> | &nbsp;&nbsp;30 Minutes … 5 Hours | Stays awake for the chosen time |
+| <img src="docs/menu-icons/infinity.png" width="18" alt=""> | &nbsp;&nbsp;Until Turned Off | Stays awake until you turn it off or quit BarKit |
+| <img src="docs/menu-icons/display.png" width="18" alt=""> | &nbsp;&nbsp;Keep Display On | Also stops the display from sleeping |
+| <img src="docs/menu-icons/powerplug.png" width="18" alt=""> | &nbsp;&nbsp;Turn On When Connected to Power | Starts Keep Awake on the adapter, ends it on battery |
+| <img src="docs/menu-icons/power.png" width="18" alt=""> | **Launch at Login** | Starts BarKit with your Mac |
+| <img src="docs/menu-icons/rectangle.portrait.and.arrow.right.png" width="18" alt=""> | **Quit BarKit** | <kbd>⌘</kbd> <kbd>Q</kbd> |
 
-**Keep Mac Awake**
-- Choose a duration, or **Until Turned Off**.
-- **Keep Display On** also stops the display from sleeping. Without it, only the Mac stays awake.
-- **Turn On When Connected to Power** starts Keep Awake on the adapter and ends it on battery.
-- A manually started session ends when BarKit quits and does not resume on relaunch.
+### Details
 
-**Launch at Login** works most reliably when BarKit runs from `/Applications`.
+- **Pin Input** switches back to your device whenever macOS changes the default input. A disconnected device shows as <img src="docs/menu-icons/exclamationmark.triangle.png" width="18" alt=""> *Unavailable* and is restored when it reconnects. Turn Pin Input off to let macOS choose the input again.
+- Devices without an adjustable volume level show as unavailable.
+- Brightness for external monitors uses DDC/CI. Support depends on the monitor, cable, adapter or dock.
+- A manually started Keep Awake session ends when BarKit quits and does not resume on relaunch.
+- **Launch at Login** works most reliably when BarKit runs from `/Applications`.
 
 ## Development
 
@@ -84,6 +93,8 @@ Scripts/
   build.sh         Compile a universal, ad-hoc signed app with swiftc
   install.sh       Build and install to /Applications
   make-icon.sh     Regenerate BarKit.icns from AppIcon.svg
+  render-menu-icons.swift   Render the menu SF Symbols used in this README
+docs/menu-icons/   Menu icon images for this README
 ```
 
 The app is built directly with `swiftc`, without an Xcode project build, and uses only system frameworks: AppKit, CoreAudio, CoreGraphics, IOKit and ServiceManagement.
